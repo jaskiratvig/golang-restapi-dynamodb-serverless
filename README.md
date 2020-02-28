@@ -51,7 +51,7 @@ The Artist struct is used to perform the following CRUD operations:
 The following dependancies are required to run the project:
 * AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
 * Amazon DynamoDB Table: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html
-* Relevant github.com/aws/ packages via ``` go get {PACKAGE_NAME} ```
+* Relevant *github.com/aws/* packages via ``` go get {PACKAGE_NAME} ```
 
 ### Run Project
 
