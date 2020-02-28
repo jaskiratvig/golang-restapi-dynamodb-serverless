@@ -60,7 +60,7 @@ This project deploys the helloWorld application from above to Lambda functions u
 
 ### Serverless
 
-One addition to the helloWorld project is the serverless.yaml file, which is responsible for deploying Amazon API Gateway as Infrastructure as Code.
+One addition to the helloWorld project is the serverless.yaml file, which is responsible for deploying Amazon API Gateway as Infrastructure as Code. However, I did not deploy the DynamoDB table via Serverless so this project assumes that a table has already been created in the us-east-1 region.
 
 ### Code Organization
 
