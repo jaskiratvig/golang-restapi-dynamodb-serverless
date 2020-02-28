@@ -48,7 +48,7 @@ The Artist struct is used to perform the following CRUD operations:
 
 ### Run Project
 
-To run this project, first install all the dependancies and make sure that the AWS credentials (Access Key, Secret Access Key) have been setup via *aws configure*. Then run 
+To run this project, first install all the dependancies and make sure that the AWS credentials (Access Key, Secret Access Key) have been setup via ``` aws configure ``` . Then run 
 
 ``` go run main.go ```
 
@@ -76,7 +76,7 @@ To run this project, make sure serverless is installed and run
 
 ``` make && sls deploy ```
 
-*make* executes the MakeFile which converts the handlers into binaries. <br />
-*sls deploy* uses the serverless.yaml file to deploy the infrastructure to AWS CloudFormation and should return some endpoints. <br />
+``` make ``` executes the MakeFile which converts the handlers into binaries. <br />
+``` sls deploy ``` uses the serverless.yaml file to deploy the infrastructure to AWS CloudFormation and should return some endpoints. <br />
 To send a request to an endpoint, run
 ``` curl -d '{"Field": "Value"}' -X {CRUD OPERATION} https://URL/ENDPOINT ```
