@@ -46,9 +46,16 @@ The Artist struct is used to perform the following CRUD operations:
   * Input: Client passes in the new object's properties via JSON body and the name of the object to be editted via JSON body
   * Output: All the fields of the object are outputted to the console and the values of the object are editted in the database
 
+### Dependancies
+
+The following dependancies are required to run the project:
+* AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
+* Amazon DynamoDB Table: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html
+* Relevant github.com/aws/ packages via ``` go get {PACKAGE_NAME} ```
+
 ### Run Project
 
-To run this project, first install all the dependancies and make sure that the AWS credentials (Access Key, Secret Access Key) have been setup via ``` aws configure ``` . Then run 
+To run this project, first install all the dependancies and make sure that the AWS credentials (Access Key, Secret Access Key) have been setup via ``` aws configure ``` as ``` createDynamoDBClient() ``` uses these credentials to connect to the database. Then run 
 
 ``` go run main.go ```
 
