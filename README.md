@@ -54,7 +54,7 @@ To run this project, first install all the dependancies and make sure that the A
 
 Open up Postman and send a CRUD request to Port 8080 passing in the respective JSON body.
 
-## golang-restapi
+## golang-restapi-dynamodb-serverless
 
 This project deploys the helloWorld application from above to Lambda functions using Serverless.
 
