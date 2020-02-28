@@ -1,6 +1,6 @@
 # golang-restapi-dynamodb-serverless
 
-## helloWorld
+## 1. helloWorld
 
 This project includes a sample application that uses Amazon DynamoDB to perform CRUD operations. A unit test file is also included to ensure functionality of the program.
 
@@ -54,7 +54,7 @@ To run this project, first install all the dependancies and make sure that the A
 
 Open up Postman and send a CRUD request to Port 8080 passing in the respective JSON body.
 
-## golang-restapi-dynamodb-serverless
+## 2. golang-restapi-dynamodb-serverless
 
 This project deploys the helloWorld application from above to Lambda functions using Serverless.
 
