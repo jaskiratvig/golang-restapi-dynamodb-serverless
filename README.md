@@ -48,7 +48,7 @@ The Artist struct is used to perform the following CRUD operations:
 
 ### Run Project
 
-To run this project, first install all the dependancies and then run 
+To run this project, first install all the dependancies and make sure that the AWS credentials (Access Key, Secret Access Key) have been setup via *aws configure*. Then run 
 
 ``` go run main.go ```
 
@@ -64,7 +64,9 @@ One addition to the helloWorld project is the serverless.yaml file, which is res
 
 ### Code Organization
 
-As opposed to the helloWorld project, the only line inside of the main function in each
+As opposed to the helloWorld project, the only line inside the main function for each golang file is
+``` lambda.Start(Handler) ```
+This command executes the respective handler based on the CRUD request and endpoint.
 
 ### Run Project
 
