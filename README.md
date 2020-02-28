@@ -65,7 +65,9 @@ One addition to the helloWorld project is the serverless.yaml file, which is res
 ### Code Organization
 
 As opposed to the helloWorld project, the only line inside the main function for each golang file is
+
 ``` lambda.Start(Handler) ```
+
 This command executes the respective handler based on the CRUD request and endpoint.
 
 ### Run Project
