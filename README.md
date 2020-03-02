@@ -70,6 +70,10 @@ This project deploys the helloWorld application from above to Lambda functions u
 
 One addition to the helloWorld project is the serverless.yaml file, which is responsible for deploying Amazon API Gateway as Infrastructure as Code. However, I did not deploy the DynamoDB table via Serverless so this project assumes that a table has already been created in the us-east-1 region.
 
+### Amazon Simple Email Service (SES)
+
+I also added functionality to send emails to the client (in this case jaskiratvig@gmail.com) anytime the database is updated. For this service to work, please ensure that the email that sends/receives emails is verified in the AWS console.
+
 ### Code Organization
 
 As opposed to the helloWorld project, the only line inside the main function for each golang file is
