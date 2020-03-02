@@ -8,9 +8,11 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/ses"
 )
 
 // BodyRequest is our self-made struct to process JSON request from Client
@@ -21,6 +23,14 @@ type BodyRequest struct {
 	Subcategory string   `json:"Subcategory"`
 	Domestic    bool     `json:"Domestic"`
 }
+
+const (
+	Sender    = "jaskiratvig@gmail.com"
+	Recipient = "jaskiratvig@gmail.com"
+	Subject   = "Success"
+	TextBody  = "This email was sent with Amazon SES using the AWS SDK for Go."
+	CharSet   = "UTF-8"
+)
 
 // Handler function Using AWS Lambda Proxy Request
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -87,6 +97,56 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if err != nil {
 		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, nil
 	}
+
+	//SES Integration
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
+	svcSes := ses.New(sess)
+
+	HTMLBody := "<h1>Success</h1><p>An artist has been editted to have the following attributes: " + string(response) + "</p>"
+
+	// Assemble the email.
+	inputSes := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			CcAddresses: []*string{},
+			ToAddresses: []*string{
+				aws.String(Recipient),
+			},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Html: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(HTMLBody),
+				},
+				Text: &ses.Content{
+					Charset: aws.String(CharSet),
+					Data:    aws.String(TextBody),
+				},
+			},
+			Subject: &ses.Content{
+				Charset: aws.String(CharSet),
+				Data:    aws.String(Subject),
+			},
+		},
+		Source: aws.String(Sender),
+		// Uncomment to use a configuration set
+		//ConfigurationSetName: aws.String(ConfigurationSet),
+	}
+
+	// Attempt to send the email.
+	resultSes, err := svcSes.SendEmail(inputSes)
+
+	// Display error messages if they occur.
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			return events.APIGatewayProxyResponse{Body: aerr.Error(), StatusCode: 404}, nil
+		}
+	}
+
+	fmt.Println("Email Sent to address: " + Recipient)
+	fmt.Println(resultSes)
 
 	//Returning response with AWS Lambda Proxy Response
 	return events.APIGatewayProxyResponse{Body: string(response), StatusCode: 200}, nil
