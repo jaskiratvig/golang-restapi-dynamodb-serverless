@@ -95,6 +95,36 @@ functions:
             parameter:
               paths:
                 name: true
+  home:
+    handler: bin/home
+    events:
+      - http:
+          path: home
+          method: get
+          request:
+            parameter:
+              paths:
+                name: true 
+  login:
+    handler: bin/login
+    events:
+      - http:
+          path: login
+          method: get
+          request:
+            parameter:
+              paths:
+                name: true 
+  callback:
+    handler: bin/callback
+    events:
+      - http:
+          path: callback
+          method: get
+          request:
+            parameter:
+              paths:
+                name: true
 
 
 #    The following are a few example events you can configure
