@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
@@ -54,7 +53,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// Unmarshal the json, return 404 if error
 	err = json.Unmarshal([]byte(request.Body), &bodyRequest)
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, nil
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
 	av, err := dynamodbattribute.MarshalMap(bodyRequest)
@@ -79,21 +78,12 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// Marshal the response into json bytes, if error return 404
 	response, err := json.Marshal(&bodyRequest)
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, nil
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
 	HTMLBody := "<h1>Success</h1><p>An artist has been editted to have the following attributes: " + string(response) + "</p>"
 
 	return ses.SendEmail(HTMLBody, string(response))
-}
-
-func createDynamoDBClient() *dynamodb.DynamoDB {
-	sess := session.Must(
-		session.NewSessionWithOptions(
-			session.Options{
-				SharedConfigState: session.SharedConfigEnable,
-			}))
-	return dynamodb.New(sess)
 }
 
 func main() {

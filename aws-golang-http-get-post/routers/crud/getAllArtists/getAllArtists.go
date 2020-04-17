@@ -17,6 +17,21 @@ import (
 
 // Handler function Using AWS Lambda Proxy Request
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+
+	var html = `
+		<html>
+			<body>
+				<a href="/dev/artists"> 
+					Login 
+				</a>
+			</body>
+		</html>
+	`
+
+	return events.APIGatewayProxyResponse{Body: html, Headers: map[string]string{
+		"Content-Type": "text/html",
+	}, StatusCode: 200}, nil
+
 	svc := dynamoDB.CreateDynamoDBClient()
 
 	proj := expression.NamesList(expression.Name("Name"), expression.Name("Subcategory"), expression.Name("Songs"), expression.Name("Domestic"))

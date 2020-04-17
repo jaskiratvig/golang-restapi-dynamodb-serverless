@@ -32,14 +32,14 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// Unmarshal the json, return 404 if error
 	err := json.Unmarshal([]byte(request.Body), &bodyRequest)
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, nil
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
 	svc := dynamoDB.CreateDynamoDBClient()
 
 	av, err := dynamodbattribute.MarshalMap(bodyRequest)
 	if err != nil {
-		fmt.Println("Got error marshalling new movie item:")
+		fmt.Println("Got error marshalling new item:")
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
@@ -59,7 +59,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	// Marshal the response into json bytes, if error return 404
 	response, err := json.Marshal(&bodyRequest)
 	if err != nil {
-		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, nil
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
 	HTMLBody := "<h1>Success</h1><p>An artist has been added to the database with the following attributes: " + string(response) + "</p>"
