@@ -47,7 +47,13 @@ The Artist struct is used to perform the following CRUD operations:
 
 ## Serverless
 
-One addition to the helloWorld project is the serverless.yaml file, which is responsible for deploying Amazon API Gateway as Infrastructure as Code. However, I did not deploy the DynamoDB table via Serverless so this project assumes that a table has already been created in the us-east-1 region.
+One addition to the helloWorld project is the serverless.yaml file, which is responsible for deploying Amazon API Gateway and creates the DynamoDB tables as Infrastructure as Code.
+
+## AWS Parameter Store
+
+## Auth0
+
+## DynamoDB
 
 ## Amazon Simple Email Service (SES)
 
@@ -68,10 +74,6 @@ The following dependancies are required to run the project:
 * Amazon DynamoDB Table: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html
 * Serverless via ``` npm install -g serverless ```
 * Relevant *github.com/aws/* packages via ``` go get {PACKAGE_NAME} ```
-
-## AWS Parameter Store
-
-## Auth0
 
 ## Run Project
 
