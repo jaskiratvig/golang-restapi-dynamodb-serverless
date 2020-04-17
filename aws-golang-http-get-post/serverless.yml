@@ -21,6 +21,28 @@ frameworkVersion: ">=1.28.0 <2.0.0"
 provider:
   name: aws
   runtime: go1.x
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-east-1:135764319795:table/Artists"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-east-1:135764319795:table/SessionData"
+
 
 # you can overwrite defaults here
 #  stage: dev
@@ -136,6 +158,34 @@ functions:
               paths:
                 name: true
 
+resources:
+  Resources:
+    Artists:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: ArtistID
+          AttributeType: S
+        KeySchema:
+        - AttributeName: ArtistID
+          KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: '1'
+          WriteCapacityUnits: '1'
+        TableName: Artists
+    SessionData:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: ClientID
+          AttributeType: S
+        KeySchema:
+        - AttributeName: ClientID
+          KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: '1'
+          WriteCapacityUnits: '1'
+        TableName: SessionData
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
