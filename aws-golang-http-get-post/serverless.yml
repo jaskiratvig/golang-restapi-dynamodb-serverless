@@ -125,6 +125,16 @@ functions:
             parameter:
               paths:
                 name: true
+  loggedIn:
+    handler: bin/loggedIn
+    events:
+      - http:
+          path: loggedIn
+          method: get
+          request:
+            parameter:
+              paths:
+                name: true
 
 
 #    The following are a few example events you can configure

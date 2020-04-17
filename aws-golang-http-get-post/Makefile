@@ -10,6 +10,7 @@ build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/home routers/auth0/home/home.go
 	env GOOS=linux go build -ldflags="-s -w" -o bin/login routers/auth0/login/login.go
 	env GOOS=linux go build -ldflags="-s -w" -o bin/callback routers/auth0/callback/callback.go
+	env GOOS=linux go build -ldflags="-s -w" -o bin/loggedIn routers/auth0/loggedIn/loggedIn.go
 
 clean:
 	rm -rf ./bin ./vendor Gopkg.lock
