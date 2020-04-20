@@ -8,8 +8,10 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/ssm"
 )
 
 // Handler function Using AWS Lambda Proxy Request
@@ -17,11 +19,20 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	svc := dynamoDB.CreateDynamoDBClient()
 
+	sess := session.New()
+	svcSES := ssm.New(sess)
+
+	clientID, err := svcSES.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientID"),
+		},
+	)
+
 	result, err := svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("SessionData"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"ClientID": {
-				S: aws.String("kf9yX2qaBa7J5tV1PtL5SpcdZ2GXHEo9"),
+				S: aws.String(aws.StringValue(clientID.Parameter.Value)),
 			},
 		},
 	})

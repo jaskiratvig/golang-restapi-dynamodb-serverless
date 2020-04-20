@@ -5,6 +5,9 @@ import (
 	"context"
 	"log"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
 )
@@ -13,16 +16,40 @@ import (
 func NewAuthenticator() (*models.Authenticator, error) {
 	ctx := context.Background()
 
-	provider, err := oidc.NewProvider(ctx, "https://jasvig.auth0.com/")
+	sess := session.New()
+	svc := ssm.New(sess)
+
+	domain, err := svc.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/Domain"),
+		},
+	)
+	clientID, err := svc.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientID"),
+		},
+	)
+	clientSecret, err := svc.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientSecret"),
+		},
+	)
+	redirectURL, err := svc.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/RedirectURL"),
+		},
+	)
+
+	provider, err := oidc.NewProvider(ctx, aws.StringValue(domain.Parameter.Value))
 	if err != nil {
 		log.Printf("Failed to get provider :%v", err)
 		return nil, err
 	}
 
 	conf := oauth2.Config{
-		ClientID:     "kf9yX2qaBa7J5tV1PtL5SpcdZ2GXHEo9",
-		ClientSecret: "q21XgkalMEr1WL81tx62ZgErY2-ZJTS5o3xs_ntm8uiwMiib5Z7N5SL92TLux2_1",
-		RedirectURL:  "https://bhvn5rgkmd.execute-api.us-east-1.amazonaws.com/dev/callback",
+		ClientID:     aws.StringValue(clientID.Parameter.Value),
+		ClientSecret: aws.StringValue(clientSecret.Parameter.Value),
+		RedirectURL:  aws.StringValue(redirectURL.Parameter.Value),
 		Endpoint:     provider.Endpoint(),
 		Scopes:       []string{oidc.ScopeOpenID, "profile"},
 	}

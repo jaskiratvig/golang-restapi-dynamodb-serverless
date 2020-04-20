@@ -186,6 +186,42 @@ resources:
           ReadCapacityUnits: '1'
           WriteCapacityUnits: '1'
         TableName: SessionData
+    Domain:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: '/dev/Domain'
+        Type: String
+        Value: 'https://jasvig.auth0.com/'
+    ClientID:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: '/dev/ClientID'
+        Type: String
+        Value: 'kf9yX2qaBa7J5tV1PtL5SpcdZ2GXHEo9'
+    ClientSecret:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: '/dev/ClientSecret'
+        Type: String
+        Value: 'q21XgkalMEr1WL81tx62ZgErY2-ZJTS5o3xs_ntm8uiwMiib5Z7N5SL92TLux2_1'
+    RedirectURL:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: '/dev/RedirectURL'
+        Type: String
+        Value: 'https://bhvn5rgkmd.execute-api.us-east-1.amazonaws.com/dev/callback'
+    LoggedInURL:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: '/dev/LoggedInURL'
+        Type: String
+        Value: 'https://bhvn5rgkmd.execute-api.us-east-1.amazonaws.com/dev/loggedIn'
+    Recipient:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: '/dev/Recipient'
+        Type: String
+        Value: 'jaskiratvig@gmail.com'
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

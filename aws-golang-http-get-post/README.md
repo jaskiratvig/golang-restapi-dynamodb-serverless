@@ -47,7 +47,7 @@ The Artist struct is used to perform the following CRUD operations:
 
 ## Serverless
 
-One addition to the helloWorld project is the serverless.yaml file, which is responsible for deploying Amazon API Gateway and creates the DynamoDB tables as Infrastructure as Code.
+The serverless.yaml file is responsible for deploying Amazon API Gateway and creates the DynamoDB tables via Infrastructure as Code. 
 
 ## AWS Parameter Store
 
@@ -85,3 +85,5 @@ To run this project, first install all the dependancies and make sure that the A
 ``` sls deploy ``` uses the serverless.yaml file to deploy the infrastructure to AWS CloudFormation and should return some endpoints. <br />
 To send a request to an endpoint, run
 ``` curl -d '{"Field": "Value"}' -X {CRUD OPERATION} https://URL/ENDPOINT ```
+
+To run the Auth0 portion of this project, navigate to ``` https://URL/home ```, click on "login" where the user will be redirected to the login endpoint. The user will be required to authenticate using either an Auth0 account or a federated identity provider (Google/Facebook). Then the user will be redirected to the loggedIn endpoint where their name will be displayed on the page.

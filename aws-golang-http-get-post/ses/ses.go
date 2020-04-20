@@ -9,21 +9,30 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go/service/ssm"
 )
 
+//SendEmail is the function that sends an email using the HTMLBody input to the recepient defined in AWS Parameter Store
 func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse, error) {
 	//SES Integration
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
 	svcSes := ses.New(sess)
+	svc := ssm.New(sess)
+
+	recipient, err := svc.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/Recipient"),
+		},
+	)
 
 	// Assemble the email.
 	inputSes := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
 			ToAddresses: []*string{
-				aws.String(constants.Recipient),
+				aws.String(aws.StringValue(recipient.Parameter.Value)),
 			},
 		},
 		Message: &ses.Message{
@@ -57,7 +66,7 @@ func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse
 		}
 	}
 
-	fmt.Println("Email Sent to address: " + constants.Recipient)
+	fmt.Println("Email Sent to address: " + aws.StringValue(recipient.Parameter.Value))
 	fmt.Println(resultSes)
 
 	//Returning response with AWS Lambda Proxy Response

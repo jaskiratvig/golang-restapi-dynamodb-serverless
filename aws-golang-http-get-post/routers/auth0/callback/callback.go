@@ -11,13 +11,24 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/coreos/go-oidc"
 )
 
 // Handler function Using AWS Lambda Proxy Request
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+
+	sess := session.New()
+	svcSES := ssm.New(sess)
+
+	loggedInURL, err := svcSES.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/LoggedInURL"),
+		},
+	)
 
 	state, err := getStateDynamoDB()
 	if err != nil {
@@ -49,18 +60,27 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 
 	return events.APIGatewayProxyResponse{Headers: map[string]string{
-		"location": "https://bhvn5rgkmd.execute-api.us-east-1.amazonaws.com/dev/loggedIn",
+		"location": aws.StringValue(loggedInURL.Parameter.Value),
 	}, StatusCode: http.StatusTemporaryRedirect}, nil
 }
 
 func getStateDynamoDB() (string, error) {
 	svc := dynamoDB.CreateDynamoDBClient()
 
+	sess := session.New()
+	svcSES := ssm.New(sess)
+
+	clientID, err := svcSES.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientID"),
+		},
+	)
+
 	result, err := svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("SessionData"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"ClientID": {
-				S: aws.String("kf9yX2qaBa7J5tV1PtL5SpcdZ2GXHEo9"),
+				S: aws.String(aws.StringValue(clientID.Parameter.Value)),
 			},
 		},
 	})
@@ -83,6 +103,15 @@ func getStateDynamoDB() (string, error) {
 }
 
 func authenticate(request events.APIGatewayProxyRequest) (*oidc.IDToken, error) {
+	sess := session.New()
+	svcSES := ssm.New(sess)
+
+	clientID, err := svcSES.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientID"),
+		},
+	)
+
 	authenticator, err := auth.NewAuthenticator()
 	if err != nil {
 		return nil, err
@@ -101,7 +130,7 @@ func authenticate(request events.APIGatewayProxyRequest) (*oidc.IDToken, error) 
 	}
 
 	oidcConfig := &oidc.Config{
-		ClientID: "kf9yX2qaBa7J5tV1PtL5SpcdZ2GXHEo9",
+		ClientID: aws.StringValue(clientID.Parameter.Value),
 	}
 
 	idToken, err := authenticator.Provider.Verifier(oidcConfig).Verify(context.TODO(), rawIDToken)
@@ -117,11 +146,20 @@ func saveProfileDynamoDB(profile map[string]interface{}) error {
 
 	svc := dynamoDB.CreateDynamoDBClient()
 
+	sess := session.New()
+	svcSES := ssm.New(sess)
+
+	clientID, err := svcSES.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientID"),
+		},
+	)
+
 	result, err := svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("SessionData"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"ClientID": {
-				S: aws.String("kf9yX2qaBa7J5tV1PtL5SpcdZ2GXHEo9"),
+				S: aws.String(aws.StringValue(clientID.Parameter.Value)),
 			},
 		},
 	})
