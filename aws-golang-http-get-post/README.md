@@ -47,25 +47,29 @@ The Artist struct is used to perform the following CRUD operations:
 
 ## Serverless
 
-The serverless.yaml file is responsible for deploying Amazon API Gateway and creates the DynamoDB tables via Infrastructure as Code. 
-
-## AWS Parameter Store
+Serverless framework helps you develop and deploy your AWS Lambda functions using AWS CloudFormation templates through Infrastructure as Code. The serverless.yaml file is responsible for setting up endpoint routes via Amazon API Gateway, saving persisted data via Amazon DynamoDB tables, and storing secrets via AWS Parameter Store.
 
 ## Auth0
 
-## DynamoDB
-
 ## Amazon Simple Email Service (SES)
 
-I also added functionality to send emails to the client (in this case jaskiratvig@gmail.com) anytime the database is updated. For this service to work, please ensure that the email that sends/receives emails is verified in the AWS console.
+Amazon Simple Email Service is a cloud-based email sending service designed to send notification emails. Anytime the Artists table is updated, an email will be sent to the client (in this case jaskiratvig@gmail.com). The recipient of these emails will be defined as an AWS Parameter Store secret in serverless.yml. For this service to work, please ensure that the email that sends/receives emails is verified in the AWS console.
 
-## Code Organization
+## DynamoDB
 
-As opposed to the helloWorld project, the only line inside the main function for each golang file is
+DynamoDB is a key-value/document No-SQL database that provides single-digit millisecond performance at any scale. Two tables are defined in serverless.yml:
+* Artists: Contains the primary key of "ArtistID" and stores an artist's name, a list of songs, the subcategory of their music, and whether the artist is domestic to the United States
+* SessionData: Contains the primary key of "ClientID" and stores the session state and information about the logged-in user
 
-``` lambda.Start(Handler) ```
+## AWS Parameter Store
 
-This command executes the respective handler based on the CRUD request and endpoint.
+AWS System Manager Parameter Store provides secure, hierarchical storage for configuration data/secrets management. The values for Domain, ClientID and ClientSecret can be found in the Auth0 Client settings. The values for RedirectURL and LoggedInURL are the endpoints retrieved after ``` sls deploy ``` is called. The following environment variables are defined under serverless.yml:
+* Domain: The subdomain of Auth0 used to authenticate the user
+* ClientID: The ID of the client
+* ClientSecret: A secret of the client
+* RedirectURL: The URL Auth0 redirects the user to after they have authenticated
+* LoggedInURL: The URL that represents the loggedIn state of the application
+* Recipient: The email address used to send all email alerts when the Artists database is updated
 
 ## Dependancies
 

@@ -12,8 +12,10 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/ssm"
 )
 
 // Handler function Using AWS Lambda Proxy Request
@@ -51,8 +53,18 @@ func generateRandomState() (string, error) {
 }
 
 func saveStateDynamoDB(state string) string {
+
+	sess := session.New()
+	svcSES := ssm.New(sess)
+
+	clientID, err := svcSES.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientID"),
+		},
+	)
+
 	session := models.SessionData{
-		ClientID: "kf9yX2qaBa7J5tV1PtL5SpcdZ2GXHEo9",
+		ClientID: aws.StringValue(clientID.Parameter.Value),
 		State:    state,
 		Profile:  nil,
 	}
