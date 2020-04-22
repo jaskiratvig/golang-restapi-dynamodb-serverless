@@ -64,9 +64,15 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
+	message := "An artist has been editted to have the following attributes: " + string(response)
 	HTMLBody := "<h1>Success</h1><p>An artist has been editted to have the following attributes: " + string(response) + "</p>"
 
-	return ses.SendEmail(HTMLBody, string(response))
+	err = ses.SendEmail(HTMLBody)
+	if err != nil {
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
+	}
+
+	return events.APIGatewayProxyResponse{Body: message, StatusCode: 200}, nil
 }
 
 func main() {

@@ -89,7 +89,7 @@ To run this project, first install all the dependancies and make sure that the A
 
 ``` make ``` executes the MakeFile which converts the handlers into binaries. <br />
 ``` sls deploy ``` uses the serverless.yaml file to deploy the infrastructure to AWS CloudFormation and should return some endpoints. <br />
-Please be sure to set the correct parameters in the serverless.yml file and update the callback URL in the Auth0 Client settings before proceeding.
+Please be sure to set the correct parameters in the serverless.yml file and update the callback URL in the Auth0 Client settings before proceeding. <br />
 To send a request to an endpoint, run
 ``` curl -d '{"Field": "Value"}' -X CRUD_OPERATION https://URL/ENDPOINT ```
 

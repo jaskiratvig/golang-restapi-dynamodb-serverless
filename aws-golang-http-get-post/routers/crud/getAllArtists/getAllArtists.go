@@ -59,7 +59,12 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	HTMLBody := "<h1>Success</h1><p>Here is a list of all artists in the database: " + message + "</p>"
 
-	return ses.SendEmail(HTMLBody, message)
+	err = ses.SendEmail(HTMLBody)
+	if err != nil {
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
+	}
+
+	return events.APIGatewayProxyResponse{Body: message, StatusCode: 200}, nil
 }
 
 func main() {

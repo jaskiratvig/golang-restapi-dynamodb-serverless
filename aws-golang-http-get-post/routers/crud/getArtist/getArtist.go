@@ -21,12 +21,15 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{Body: message, StatusCode: 404}, err
 	}
 
-	//Generate message that want to be sent as body
 	message := fmt.Sprintf("Found artist: ArtistID: %+v Name: %+v Subcategory: %+v Songs: %+v Domestic: %+v ", item.ArtistID, item.Name, item.Subcategory, item.Songs, item.Domestic)
-
 	HTMLBody := "<h1>Success</h1><p> " + message + "</p>"
 
-	return ses.SendEmail(HTMLBody, message)
+	err = ses.SendEmail(HTMLBody)
+	if err != nil {
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
+	}
+
+	return events.APIGatewayProxyResponse{Body: message, StatusCode: 200}, nil
 }
 
 func main() {

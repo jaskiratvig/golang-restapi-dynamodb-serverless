@@ -32,12 +32,15 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		os.Exit(1)
 	}
 
-	//Generate message that want to be sent as body
 	message := fmt.Sprintf("Deleted artist: Name: %+v ", request.PathParameters["Name"])
-
 	HTMLBody := "<h1>Success</h1><p>Artist " + request.PathParameters["Name"] + " has been deleted from the database.</p>"
 
-	return ses.SendEmail(HTMLBody, message)
+	err = ses.SendEmail(HTMLBody)
+	if err != nil {
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
+	}
+
+	return events.APIGatewayProxyResponse{Body: message, StatusCode: 200}, nil
 }
 
 func main() {

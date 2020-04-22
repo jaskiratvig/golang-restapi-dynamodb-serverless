@@ -2,18 +2,15 @@ package ses
 
 import (
 	"aws-golang-http-get-post/constants"
-	"fmt"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/aws/aws-sdk-go/service/ssm"
 )
 
 //SendEmail is the function that sends an email using the HTMLBody input to the recepient defined in AWS Parameter Store
-func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse, error) {
+func SendEmail(HTMLBody string) error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
@@ -52,15 +49,10 @@ func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse
 		Source: aws.String(constants.Sender),
 	}
 
-	resultSes, err := svcSes.SendEmail(inputSes)
+	_, err = svcSes.SendEmail(inputSes)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			return events.APIGatewayProxyResponse{Body: aerr.Error(), StatusCode: 404}, nil
-		}
+		return err
 	}
 
-	fmt.Println("Email Sent to address: " + aws.StringValue(recipient.Parameter.Value))
-	fmt.Println(resultSes)
-
-	return events.APIGatewayProxyResponse{Body: string(response), StatusCode: 200}, nil
+	return nil
 }

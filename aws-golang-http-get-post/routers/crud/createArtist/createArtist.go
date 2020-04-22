@@ -63,8 +63,14 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 
 	HTMLBody := "<h1>Success</h1><p>An artist has been added to the database with the following attributes: " + string(response) + "</p>"
+	message := "An artist has been added to the database with the following attributes: " + string(response)
 
-	return ses.SendEmail(HTMLBody, string(response))
+	err = ses.SendEmail(HTMLBody)
+	if err != nil {
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
+	}
+
+	return events.APIGatewayProxyResponse{Body: message, StatusCode: 200}, nil
 }
 
 func createDynamoDBClient() *dynamodb.DynamoDB {
