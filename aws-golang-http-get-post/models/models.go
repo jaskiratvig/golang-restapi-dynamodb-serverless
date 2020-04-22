@@ -28,6 +28,7 @@ type SessionData struct {
 	ClientID string                 `json:"ClientID"`
 	State    string                 `json:"State"`
 	Profile  map[string]interface{} `json:"Profile"`
+	Token    string                 `json:"Token"`
 }
 
 func (art Artist) editArtist(artist Artist) Artist {

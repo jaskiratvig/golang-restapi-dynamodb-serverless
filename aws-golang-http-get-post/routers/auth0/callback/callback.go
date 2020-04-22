@@ -16,15 +16,16 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/coreos/go-oidc"
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Handler function Using AWS Lambda Proxy Request
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	sess := session.New()
-	svcSES := ssm.New(sess)
+	svcSSM := ssm.New(sess)
 
-	loggedInURL, err := svcSES.GetParameter(
+	loggedInURL, err := svcSSM.GetParameter(
 		&ssm.GetParameterInput{
 			Name: aws.String("/dev/LoggedInURL"),
 		},
@@ -34,17 +35,13 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	if err != nil {
 		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 400}, err
 	}
-	if state == "" {
-		err = fmt.Errorf("Could not find state")
-		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 400}, err
-	}
 
 	if state != request.QueryStringParameters["state"] {
 		err = fmt.Errorf("Invalid state parameter")
 		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 400}, err
 	}
 
-	idToken, err := authenticate(request)
+	idToken, err := authenticate(request, state)
 	if err != nil {
 		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 400}, err
 	}
@@ -65,32 +62,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 }
 
 func getStateDynamoDB() (string, error) {
-	svc := dynamoDB.CreateDynamoDBClient()
-
-	sess := session.New()
-	svcSES := ssm.New(sess)
-
-	clientID, err := svcSES.GetParameter(
-		&ssm.GetParameterInput{
-			Name: aws.String("/dev/ClientID"),
-		},
-	)
-
-	result, err := svc.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String("SessionData"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"ClientID": {
-				S: aws.String(aws.StringValue(clientID.Parameter.Value)),
-			},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	item := models.SessionData{}
-
-	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
+	item, err := dynamoDB.GetSessionData()
 	if err != nil {
 		return "", err
 	}
@@ -102,15 +74,15 @@ func getStateDynamoDB() (string, error) {
 	return item.State, nil
 }
 
-func authenticate(request events.APIGatewayProxyRequest) (*oidc.IDToken, error) {
-	sess := session.New()
-	svcSES := ssm.New(sess)
+func authenticate(request events.APIGatewayProxyRequest, state string) (*oidc.IDToken, error) {
+	item, err := dynamoDB.GetSessionData()
+	if err != nil {
+		return nil, err
+	}
 
-	clientID, err := svcSES.GetParameter(
-		&ssm.GetParameterInput{
-			Name: aws.String("/dev/ClientID"),
-		},
-	)
+	if err = jsonAuthenticate(item, state); err != nil {
+		return nil, err
+	}
 
 	authenticator, err := auth.NewAuthenticator()
 	if err != nil {
@@ -129,6 +101,15 @@ func authenticate(request events.APIGatewayProxyRequest) (*oidc.IDToken, error) 
 		return nil, err
 	}
 
+	sess := session.New()
+	svcSSM := ssm.New(sess)
+
+	clientID, err := svcSSM.GetParameter(
+		&ssm.GetParameterInput{
+			Name: aws.String("/dev/ClientID"),
+		},
+	)
+
 	oidcConfig := &oidc.Config{
 		ClientID: aws.StringValue(clientID.Parameter.Value),
 	}
@@ -142,34 +123,34 @@ func authenticate(request events.APIGatewayProxyRequest) (*oidc.IDToken, error) 
 	return idToken, nil
 }
 
+func jsonAuthenticate(item models.SessionData, state string) error {
+	if item.Token != "" {
+		token, err := jwt.Parse(item.Token, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				merror := fmt.Errorf("Error parsing JWT token")
+				return nil, merror
+			}
+			return []byte(state), nil
+		})
+		if err != nil {
+			return err
+		}
+
+		if !token.Valid {
+			return fmt.Errorf("Not authorized")
+		}
+	} else {
+		return fmt.Errorf("Not authorized")
+	}
+
+	return nil
+}
+
 func saveProfileDynamoDB(profile map[string]interface{}) error {
 
 	svc := dynamoDB.CreateDynamoDBClient()
 
-	sess := session.New()
-	svcSES := ssm.New(sess)
-
-	clientID, err := svcSES.GetParameter(
-		&ssm.GetParameterInput{
-			Name: aws.String("/dev/ClientID"),
-		},
-	)
-
-	result, err := svc.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String("SessionData"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"ClientID": {
-				S: aws.String(aws.StringValue(clientID.Parameter.Value)),
-			},
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	item := models.SessionData{}
-
-	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
+	item, err := dynamoDB.GetSessionData()
 	if err != nil {
 		return err
 	}
@@ -179,6 +160,7 @@ func saveProfileDynamoDB(profile map[string]interface{}) error {
 		ClientID: item.ClientID,
 		State:    item.State,
 		Profile:  profile,
+		Token:    item.Token,
 	}
 
 	av, err := dynamodbattribute.MarshalMap(bodyRequest)

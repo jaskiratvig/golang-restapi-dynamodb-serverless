@@ -17,28 +17,11 @@ import (
 
 // Handler function Using AWS Lambda Proxy Request
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-
 	svc := dynamoDB.CreateDynamoDBClient()
 
-	result, err := svc.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String("Artists"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"Name": {
-				S: aws.String(request.PathParameters["Name"]),
-			},
-		},
-	})
+	item, err := dynamoDB.GetArtist(request)
 	if err != nil {
-		message := fmt.Sprintf(err.Error())
-		return events.APIGatewayProxyResponse{Body: message, StatusCode: 404}, err
-	}
-
-	item := models.Artist{}
-
-	err = dynamodbattribute.UnmarshalMap(result.Item, &item)
-	if err != nil {
-		message := fmt.Sprintf("Failed to unmarshal Record, %v", err)
-		return events.APIGatewayProxyResponse{Body: message, StatusCode: 404}, err
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
 	// BodyRequest will be used to take the json response from client and build it

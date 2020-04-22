@@ -209,13 +209,13 @@ resources:
       Properties:
         Name: '/dev/RedirectURL'
         Type: String
-        Value: 'https://bhvn5rgkmd.execute-api.us-east-1.amazonaws.com/dev/callback'
+        Value: 'https://2ttvj85an1.execute-api.us-east-1.amazonaws.com/dev/callback'
     LoggedInURL:
       Type: AWS::SSM::Parameter
       Properties:
         Name: '/dev/LoggedInURL'
         Type: String
-        Value: 'https://bhvn5rgkmd.execute-api.us-east-1.amazonaws.com/dev/loggedIn'
+        Value: 'https://2ttvj85an1.execute-api.us-east-1.amazonaws.com/dev/loggedIn'
     Recipient:
       Type: AWS::SSM::Parameter
       Properties:

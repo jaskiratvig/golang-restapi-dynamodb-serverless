@@ -14,7 +14,6 @@ import (
 
 //SendEmail is the function that sends an email using the HTMLBody input to the recepient defined in AWS Parameter Store
 func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse, error) {
-	//SES Integration
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
@@ -27,7 +26,6 @@ func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse
 		},
 	)
 
-	// Assemble the email.
 	inputSes := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
@@ -52,14 +50,9 @@ func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse
 			},
 		},
 		Source: aws.String(constants.Sender),
-		// Uncomment to use a configuration set
-		//ConfigurationSetName: aws.String(ConfigurationSet),
 	}
 
-	// Attempt to send the email.
 	resultSes, err := svcSes.SendEmail(inputSes)
-
-	// Display error messages if they occur.
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			return events.APIGatewayProxyResponse{Body: aerr.Error(), StatusCode: 404}, nil
@@ -69,6 +62,5 @@ func SendEmail(HTMLBody string, response string) (events.APIGatewayProxyResponse
 	fmt.Println("Email Sent to address: " + aws.StringValue(recipient.Parameter.Value))
 	fmt.Println(resultSes)
 
-	//Returning response with AWS Lambda Proxy Response
 	return events.APIGatewayProxyResponse{Body: string(response), StatusCode: 200}, nil
 }

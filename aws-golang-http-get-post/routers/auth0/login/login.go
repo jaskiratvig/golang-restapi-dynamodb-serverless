@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -16,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/ssm"
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 // Handler function Using AWS Lambda Proxy Request
@@ -26,7 +28,12 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 400}, err
 	}
 
-	errorMessage := saveStateDynamoDB(state)
+	validToken, err := generateJWT(state)
+	if err != nil {
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 400}, err
+	}
+
+	errorMessage := saveStateTokenDynamoDB(state, validToken)
 	if errorMessage != "" {
 		err = fmt.Errorf(errorMessage)
 		return events.APIGatewayProxyResponse{Body: errorMessage, StatusCode: 400}, err
@@ -34,7 +41,6 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 
 	authenticator, err := auth.NewAuthenticator()
 	if err != nil {
-		err = fmt.Errorf(errorMessage)
 		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 400}, err
 	}
 
@@ -52,12 +58,12 @@ func generateRandomState() (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
-func saveStateDynamoDB(state string) string {
+func saveStateTokenDynamoDB(state string, token string) string {
 
 	sess := session.New()
-	svcSES := ssm.New(sess)
+	svcSSM := ssm.New(sess)
 
-	clientID, err := svcSES.GetParameter(
+	clientID, err := svcSSM.GetParameter(
 		&ssm.GetParameterInput{
 			Name: aws.String("/dev/ClientID"),
 		},
@@ -67,6 +73,7 @@ func saveStateDynamoDB(state string) string {
 		ClientID: aws.StringValue(clientID.Parameter.Value),
 		State:    state,
 		Profile:  nil,
+		Token:    token,
 	}
 
 	svc := dynamoDB.CreateDynamoDBClient()
@@ -87,6 +94,22 @@ func saveStateDynamoDB(state string) string {
 	}
 
 	return ""
+}
+
+func generateJWT(state string) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	claims := token.Claims.(jwt.MapClaims)
+
+	claims["authorized"] = true
+	claims["exp"] = time.Now().Add(time.Minute).Unix()
+
+	tokenString, err := token.SignedString([]byte(state))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
 
 func main() {

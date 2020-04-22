@@ -67,8 +67,8 @@ DynamoDB is a key-value/document No-SQL database that provides single-digit mill
 
 AWS System Manager Parameter Store provides secure, hierarchical storage for configuration data/secrets management. The values for Domain, ClientID and ClientSecret can be found in the Auth0 Client settings. The values for RedirectURL and LoggedInURL are the endpoints retrieved after ``` sls deploy ``` is called. The following environment variables are defined under serverless.yml:
 * Domain: The subdomain of Auth0 used to authenticate the user
-* ClientID: The ID of the client
-* ClientSecret: A secret of the client
+* ClientID: Identifies our application
+* ClientSecret: Secret key used in the token exchange step
 * RedirectURL: The URL Auth0 redirects the user to after they have authenticated
 * LoggedInURL: The URL that represents the loggedIn state of the application
 * Recipient: The email address used to send all email alerts when the Artists database is updated
@@ -76,8 +76,8 @@ AWS System Manager Parameter Store provides secure, hierarchical storage for con
 ## Dependancies
 
 The following dependancies are required to run the project:
+* Create an Auth0 account and update the Domain, ClientID, and ClientSecret parameters in serverless.yml: https://auth0.com/signup
 * AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
-* Amazon DynamoDB Table: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/SampleData.CreateTables.html
 * Serverless via ``` npm install -g serverless ```
 * Relevant *github.com/aws/* packages via ``` go get {PACKAGE_NAME} ```
 
@@ -89,7 +89,8 @@ To run this project, first install all the dependancies and make sure that the A
 
 ``` make ``` executes the MakeFile which converts the handlers into binaries. <br />
 ``` sls deploy ``` uses the serverless.yaml file to deploy the infrastructure to AWS CloudFormation and should return some endpoints. <br />
+Please be sure to set the correct parameters in the serverless.yml file and update the callback URL in the Auth0 Client settings before proceeding.
 To send a request to an endpoint, run
-``` curl -d '{"Field": "Value"}' -X {CRUD OPERATION} https://URL/ENDPOINT ```
+``` curl -d '{"Field": "Value"}' -X CRUD_OPERATION https://URL/ENDPOINT ```
 
 To run the Auth0 portion of this project, navigate to ``` https://URL/home ```, click on "login" where the user will be redirected to the login endpoint. The user will be required to authenticate using either an Auth0 account or a federated identity provider (Google/Facebook). Then the user will be redirected to the loggedIn endpoint where their name will be displayed on the page.
