@@ -14,7 +14,10 @@ func SendEmail(HTMLBody string) error {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
-	svcSes := ses.New(sess)
+	if err != nil {
+		return err
+	}
+
 	svc := ssm.New(sess)
 
 	recipient, err := svc.GetParameter(
@@ -26,9 +29,7 @@ func SendEmail(HTMLBody string) error {
 	inputSes := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(aws.StringValue(recipient.Parameter.Value)),
-			},
+			ToAddresses: []*string{recipient.Parameter.Value},
 		},
 		Message: &ses.Message{
 			Body: &ses.Body{
@@ -49,6 +50,7 @@ func SendEmail(HTMLBody string) error {
 		Source: aws.String(constants.Sender),
 	}
 
+	svcSes := ses.New(sess)
 	_, err = svcSes.SendEmail(inputSes)
 	if err != nil {
 		return err

@@ -5,7 +5,6 @@ import (
 	"aws-golang-http-get-post/models"
 	"aws-golang-http-get-post/ses"
 	"fmt"
-	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -23,9 +22,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	proj := expression.NamesList(expression.Name("Name"), expression.Name("Subcategory"), expression.Name("Songs"), expression.Name("Domestic"))
 	expr, err := expression.NewBuilder().WithProjection(proj).Build()
 	if err != nil {
-		fmt.Println("Got error building expression:")
-		fmt.Println(err.Error())
-		os.Exit(1)
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
 	params := &dynamodb.ScanInput{
@@ -36,9 +33,7 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	}
 	result, err := svc.Scan(params)
 	if err != nil {
-		fmt.Println("Query API call failed:")
-		fmt.Println((err.Error()))
-		os.Exit(1)
+		return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 	}
 
 	message := fmt.Sprintf("")
@@ -47,11 +42,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		item := models.Artist{}
 
 		err = dynamodbattribute.UnmarshalMap(i, &item)
-
 		if err != nil {
-			fmt.Println("Got error unmarshalling:")
-			fmt.Println(err.Error())
-			os.Exit(1)
+			return events.APIGatewayProxyResponse{Body: err.Error(), StatusCode: 404}, err
 		}
 
 		message = message + fmt.Sprintf("Name: %+v Subcategory: %+v Songs: %+v Domestic: %+v ", item.Name, item.Subcategory, item.Songs, item.Domestic)
