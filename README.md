@@ -1,5 +1,5 @@
 
-# Golang Restapi Dynamodb Serverless Auth0 App
+# CRUD Artists App
 
 This project includes a sample application that uses Amazon DynamoDB to perform CRUD operations with authentication/ authorization via Auth0
 
